@@ -22,7 +22,7 @@ function varargout = imageResizeTool(varargin)
 
 % Edit the above text to modify the response to help imageResizeTool
 
-% Last Modified by GUIDE v2.5 17-Apr-2017 13:53:56
+% Last Modified by GUIDE v2.5 27-Apr-2017 15:09:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -106,26 +106,70 @@ function resize_Callback(hObject, eventdata, handles)
 
 input_folder = handles.input_folders;
 output_folder = handles.output_folders;
+scale = handles.scale;
 
 dirs = dir(input_folder);
 isimg = ~[dirs(:).isdir];
 
 img_path_list = dirs(isimg);
+tic
+fprintf('%u 张图片待处理...\n', length(img_path_list));
 
 for i = 1 : 1 : length(img_path_list)
     img_name = img_path_list(i).name;
     I = imread(strcat(input_folder, '\',  img_name));
-    [h, w] = size(I);
-    if w > 640
-        I = imresize(I, [480, 640]);
-    end
+    [h, w, t] = size(I);
+    I = imresize(I, [h * scale, w * scale]);
     imwrite(I, strcat(output_folder, '\',  img_name));
 end
+fprintf('处理完成，耗时：%f 秒\n', toc);
+fprintf('照片尺寸从%u * %u剪裁到%u * %u', w, h, w * scale, h * scale);
+
 
 
 % --- Executes during object creation, after setting all properties.
 function zoom_scale_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to zoom_scale (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in zoom_scale_set.
+function zoom_scale_set_Callback(hObject, eventdata, handles)
+% hObject    handle to zoom_scale_set (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+function zoom_scale_setting_Callback(hObject, eventdata, handles)
+% hObject    handle to zoom_scale_setting (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of zoom_scale_setting as text
+%        str2double(get(hObject,'String')) returns contents of zoom_scale_setting as a double
+
+scale = str2num(get(handles.zoom_scale_setting, 'String'));
+
+if isempty(scale)
+    scale = 1;
+end
+
+handles.scale = scale;
+set(handles.zoom_scale_setting, 'String', num2str(handles.scale));
+
+guidata(hObject, handles);
+
+% --- Executes during object creation, after setting all properties.
+function zoom_scale_setting_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to zoom_scale_setting (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
